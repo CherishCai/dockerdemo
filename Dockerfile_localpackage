@@ -1,0 +1,8 @@
+FROM  registry.cn-shenzhen.aliyuncs.com/linuxjava/java8-alpine
+
+MAINTAINER hongwen.chw <hongwen.chw@antfin.com>
+
+COPY ./target/*.jar /
+
+EXPOSE 8080
+CMD java -jar *.jar

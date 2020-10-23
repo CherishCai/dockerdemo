@@ -1,0 +1,17 @@
+# 1. 打包镜像
+FROM registry.cn-shenzhen.aliyuncs.com/sjroom/alpine-java8-maven3 AS BUILDER
+
+MAINTAINER hongwen.chw <hongwen.chw@antfin.com>
+
+COPY . /
+# 2. 编译命令
+RUN mvn clean package -Dmaven.test.skip=true
+
+# 3. 运行镜像
+FROM registry.cn-shenzhen.aliyuncs.com/centos_7/centos7_jdk8
+
+# 4. 从build镜像拷贝编译好的包到runtime镜像中。
+COPY --from=BUILDER ./target/*.jar /
+
+EXPOSE 8080
+CMD java -jar *.jar
