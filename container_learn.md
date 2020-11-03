@@ -49,8 +49,6 @@ docker inspect registry.cn-shenzhen.aliyuncs.com/cherish520/cherish:0.0.4
     "WorkDir": "/var/lib/docker/overlay2/006b7f45123054de0c036dedb40c097b24c3ef6f1dfd2680cd13e1077504ef92/work"
 }
 
--- 取 MergedDir 演示 namespaces
-
 ## docker inspect [containerId] , 以 k8s 启动的容器为准
 {
     "LowerDir": "/var/lib/docker/overlay2/77b9bd2f5643a9145170769b9d12820af43c9ef7de4737846fc6f2789caecb27-init/diff:/var/lib/docker/overlay2/006b7f45123054de0c036dedb40c097b24c3ef6f1dfd2680cd13e1077504ef92/diff:/var/lib/docker/overlay2/f685830c23105a024dc729dbfacdcd84281cb1babc216a9e0a9ccd3525c46da9/diff:/var/lib/docker/overlay2/bd11e9a678b9d2ebc54857defbc0e135755cba58e471be1f718d941202dfd05f/diff:/var/lib/docker/overlay2/2f3d6a609392b43371be098f5a24242c35ae0900f9b5cd503be328be42e30fe1/diff:/var/lib/docker/overlay2/6695a9d7f67379631f981771d9623546db6db4d3f7d608ac0f9a2845c63de925/diff:/var/lib/docker/overlay2/a8eb8e6448110481d8e850482dc0a1b44b8983133726dc2a3c13183978c2f81a/diff:/var/lib/docker/overlay2/46a8441704feecb423ea093e593e6af47479cc233d5e5e6411cb8a7883bde9a9/diff:/var/lib/docker/overlay2/0dec6fe26b53fb17bc91ca7d22153d42feb5b1d5fe882e7b01186a7be3b41325/diff",
@@ -58,9 +56,11 @@ docker inspect registry.cn-shenzhen.aliyuncs.com/cherish520/cherish:0.0.4
     "UpperDir": "/var/lib/docker/overlay2/77b9bd2f5643a9145170769b9d12820af43c9ef7de4737846fc6f2789caecb27/diff",
     "WorkDir": "/var/lib/docker/overlay2/77b9bd2f5643a9145170769b9d12820af43c9ef7de4737846fc6f2789caecb27/work"
 }
+-- 取 MergedDir 演示 namespaces
 
 ## cd 到 merged, 尝试 chroot . ; sudo unshare --uts --pid --mount --fork --mount-proc /bin/bash && hostname container0xx && exec bash
-cd /var/lib/docker/overlay2/77b9bd2f5643a9145170769b9d12820af43c9ef7de4737846fc6f2789caecb27/merged
+docker inspect [containerId] | grep MergedDir
+cd /var/lib/docker/overlay2/[containerId]/merged
 
 sudo unshare --uts --pid --mount --fork --mount-proc /bin/bash 
 hostname container0xx
@@ -82,20 +82,22 @@ chroot .
 ### 新开一个 shell 登录宿主机, 从外部看容器进程 
 pstree -pl | grep java
 
+### 在自造的 '假容器' 里退出，然后再从外部看进程
+
 
 # 启动 pod
 kubectl apply -f cherish-demo-pod.yaml
 
-# 可看到有 nginx, java , pause 镜像,容器
+## 可看到有 nginx, java , pause 镜像,容器
 docker ps 
 
-# 请求数据
+## 宿主机上请求数据
 curl 127.0.0.1:8001 -i
 
 curl 127.0.0.1:8002 -i
 curl 127.0.0.1:8002/java -i
 
-# exec 进入容器
+## exec 进入容器
 kubectl exec -it cherish-demo-pod -c nginx-demo -- /bin/sh
 
 kubectl exec -it cherish-demo-pod -c demo1 -- /bin/sh
@@ -105,6 +107,7 @@ netstat -an
 
 curl 127.0.0.1:80
 curl 127.0.0.1:80/java
+curl 127.0.0.1:8080
 ```
 
 # limit , CGroups
