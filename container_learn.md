@@ -12,25 +12,28 @@ echo "upperdir" > upperdir/file1.txt
 echo "lowerdir" > lowerdir/update.txt
 echo "lowerdir" > lowerdir/del.txt
 
+tree 
+
 mount -t overlay -o lowerdir=./lowerdir,upperdir=./upperdir,workdir=./workdir overlay ./mergeddir
 
-ll mergeddir
+tree 
+
 cat mergeddir/*
 
 echo "mergeddir" > mergeddir/update.txt
 echo "mergeddir" > mergeddir/add.txt
-rm -f cat mergeddir/del.txt
+rm -f mergeddir/del.txt
 
-ll lowerdir
-ll upperdir
-ll mergeddir
+tree
 
 cat mergeddir/*
-cat lowerdir/update.txt && cat upperdir/update.txt
+cat lowerdir/update.txt && cat upperdir/update.txt && cat mergeddir/update.txt
 
 # umount 卸载
 mount | grep overlay
-umount /root/mergeddir
+umount $(pwd)/mergeddir
+
+tree
 rm -rf lowerdir upperdir workdir mergeddir
 
 
@@ -45,6 +48,8 @@ docker inspect registry.cn-shenzhen.aliyuncs.com/cherish520/cherish:0.0.4
     "UpperDir": "/var/lib/docker/overlay2/006b7f45123054de0c036dedb40c097b24c3ef6f1dfd2680cd13e1077504ef92/diff",
     "WorkDir": "/var/lib/docker/overlay2/006b7f45123054de0c036dedb40c097b24c3ef6f1dfd2680cd13e1077504ef92/work"
 }
+
+-- 取 MergedDir 演示 namespaces
 
 ## docker inspect [containerId] , 以 k8s 启动的容器为准
 {
@@ -66,6 +71,7 @@ pstree -pl
 
 nohup usr/java/jdk/bin/java -Dserver.port=8088 -jar *.jar &
 
+curl 127.0.0.1:8088
 pstree -pl
 
 readlink /proc/[pid]/ns/pid
@@ -73,7 +79,8 @@ readlink /proc/[pid]/ns/pid
 chroot .
 /bin/ls -lh
 
-
+### 新开一个 shell 登录宿主机, 从外部看容器进程 
+pstree -pl | grep java
 
 
 # 启动 pod
@@ -89,9 +96,9 @@ curl 127.0.0.1:8002 -i
 curl 127.0.0.1:8002/java -i
 
 # exec 进入容器
-k exec -it cherish-demo-pod -c nginx-demo -- /bin/sh
+kubectl exec -it cherish-demo-pod -c nginx-demo -- /bin/sh
 
-k exec -it cherish-demo-pod -c demo1 -- /bin/sh
+kubectl exec -it cherish-demo-pod -c demo1 -- /bin/sh
 
 ```$shell
 netstat -an
@@ -103,9 +110,9 @@ curl 127.0.0.1:80/java
 # limit , CGroups
 cd /sys/fs/cgroup
 
-### docker /sys/fs/cgroup/cpu/docker/containerId/*
+### docker 关注 /sys/fs/cgroup/cpu/docker/[containerId]/*
 
-### k8s /sys/fs/cgroup/cpu/kubepods/besteffort/pod[podId]/[containerId]
+### k8s 关注 /sys/fs/cgroup/cpu/kubepods/besteffort/pod[podId]/[containerId]
 cat cpu.cfs_period_us
 cat cpu.cfs_quota_us
 

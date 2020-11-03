@@ -9,3 +9,5 @@ docker push registry.cn-shenzhen.aliyuncs.com/cherish520/cherish:0.0.4
 
 
 ### 注意 default.conf 文件，要放到 /data/share/ 下
+
+http://gitlab.alipay-inc.com/hongwen.chw/dockerdemo
