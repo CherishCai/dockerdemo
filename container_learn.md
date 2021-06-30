@@ -29,6 +29,9 @@ tree
 cat mergeddir/*
 cat lowerdir/update.txt && cat upperdir/update.txt && cat mergeddir/update.txt
 
+### 看 .writeout
+ll -a upperdir
+
 # umount 卸载
 mount | grep overlay
 umount $(pwd)/mergeddir
@@ -83,6 +86,7 @@ chroot .
 pstree -pl | grep java
 
 ### 在自造的 '假容器' 里退出，然后再从外部看进程
+#### 以此说明 [容器设计模式] 思想
 
 
 # 启动 pod
@@ -116,6 +120,9 @@ cd /sys/fs/cgroup
 ### docker 关注 /sys/fs/cgroup/cpu/docker/[containerId]/*
 
 ### k8s 关注 /sys/fs/cgroup/cpu/kubepods/besteffort/pod[podId]/[containerId]
+#### 先执行个死循环
+curl 127.0.0.1:8080/loop?loop=true
+
 cat cpu.cfs_period_us
 cat cpu.cfs_quota_us
 
